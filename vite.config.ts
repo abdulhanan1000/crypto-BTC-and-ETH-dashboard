@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: './',  // This ensures assets are loaded correctly
+  base: '',  // This ensures assets are loaded correctly
   server: {
     port: 3000
   },
@@ -17,8 +17,8 @@ export default defineConfig({
       output: {
         manualChunks: undefined,
         assetFileNames: (assetInfo) => {
-          if (assetInfo.name === 'favicon.svg') {
-            return 'favicon/[name][extname]';
+          if (assetInfo.name === 'bitcoin.svg.webp') {
+            return '[name][extname]';
           }
           return 'assets/[name]-[hash][extname]';
         }
