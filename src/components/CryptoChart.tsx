@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createChart, ColorType, Time } from "lightweight-charts";
-import { Box, Typography, Paper } from "@mui/material";
+import { Box, Typography, Paper, useTheme } from "@mui/material";
 import { TimeFrame, TimeFrameSelector } from "./TimeFrameSelector";
 import { CandleData, IndicatorData } from "../types/crypto";
 import { IndicatorControls, IndicatorSettings } from "./IndicatorControls";
@@ -146,6 +146,7 @@ export const CryptoChart = ({
   onTimeFrameChange,
 }: CryptoChartProps) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
+  const theme = useTheme();
   const [indicators, setIndicators] = useState<IndicatorSettings>({
     showMA20: true,
     showMA50: true,
@@ -157,27 +158,35 @@ export const CryptoChart = ({
   useEffect(() => {
     if (!chartContainerRef.current || !data.length) return;
 
-    // Process data with correct Time type
-    const sortedData = [...data]
-      .sort((a, b) => Number(a.time) - Number(b.time))
-      .map((d) => ({
-        ...d,
-        time: processTimeStamp(
-          timeFrame === "1M" ? Math.floor(d.time as number) : (d.time as number)
-        ),
-      }));
+    const handleResize = () => {
+      if (chartContainerRef.current) {
+        const width = chartContainerRef.current.clientWidth;
+        const height = Math.min(500, width * 0.75); // Make height responsive
+        chart.applyOptions({ 
+          width,
+          height
+        });
+      }
+    };
 
     const chart = createChart(chartContainerRef.current, {
       layout: {
-        background: { type: ColorType.Solid, color: "#121212" },
-        textColor: "#EFEFEF",
+        background: { 
+          type: ColorType.Solid, 
+          color: theme.palette.background.paper 
+        },
+        textColor: theme.palette.text.primary,
       },
       grid: {
-        vertLines: { color: "#232323" },
-        horzLines: { color: "#232323" },
+        vertLines: { 
+          color: theme.palette.mode === 'dark' ? '#232323' : '#e0e0e0' 
+        },
+        horzLines: { 
+          color: theme.palette.mode === 'dark' ? '#232323' : '#e0e0e0' 
+        },
       },
       width: chartContainerRef.current.clientWidth,
-      height: 500,
+      height: Math.min(500, chartContainerRef.current.clientWidth * 0.75),
     });
 
     const candlestickSeries = chart.addCandlestickSeries({
@@ -188,6 +197,7 @@ export const CryptoChart = ({
       wickDownColor: "#ef5350",
     });
 
+    const sortedData = [...data].sort((a, b) => Number(a.time) - Number(b.time));
     candlestickSeries.setData(sortedData);
 
     const maData = calculateMovingAverages(sortedData);
@@ -302,19 +312,13 @@ export const CryptoChart = ({
       crosshair: {
         mode: 1,
         vertLine: {
-          labelBackgroundColor: "#121212",
+          labelBackgroundColor: theme.palette.background.paper,
         },
         horzLine: {
-          labelBackgroundColor: "#121212",
+          labelBackgroundColor: theme.palette.background.paper,
         },
       },
     });
-
-    const handleResize = () => {
-      if (chartContainerRef.current) {
-        chart.applyOptions({ width: chartContainerRef.current.clientWidth });
-      }
-    };
 
     window.addEventListener("resize", handleResize);
 
@@ -322,16 +326,16 @@ export const CryptoChart = ({
       window.removeEventListener("resize", handleResize);
       chart.remove();
     };
-  }, [data, timeFrame, indicators]);
+  }, [data, timeFrame, indicators, theme.palette.mode]);
 
   return (
     <Paper
-      elevation={3}
+      elevation={theme.palette.mode === 'dark' ? 3 : 1}
       sx={{
-        p: 2,
+        p: { xs: 1, sm: 2 },
         height: "100%",
-        bgcolor: "#121212",
-        color: "white",
+        bgcolor: "background.paper",
+        color: "text.primary",
       }}
     >
       <Typography variant="h5" gutterBottom>

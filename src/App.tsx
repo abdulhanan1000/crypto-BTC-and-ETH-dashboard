@@ -9,26 +9,15 @@ import {
   Toolbar,
   Typography,
   Link,
+  IconButton,
 } from "@mui/material";
 import GitHubIcon from "@mui/icons-material/GitHub";
+import { Brightness4, Brightness7 } from '@mui/icons-material';
 import { CryptoChart } from "./components/CryptoChart";
 import { CryptoService } from "./services/cryptoService";
 import { TimeFrame } from "./components/TimeFrameSelector";
 import { CandleData } from "./types/crypto";
 import "./App.css";
-
-const theme = createTheme({
-  palette: {
-    mode: "dark",
-    background: {
-      default: "#000000",
-      paper: "#121212",
-    },
-    primary: {
-      main: "#90caf9",
-    },
-  },
-});
 
 function App() {
   const [btcData, setBtcData] = useState<CandleData[]>([]);
@@ -37,6 +26,27 @@ function App() {
   const [ethPrice, setEthPrice] = useState(0);
   const [btcTimeFrame, setBtcTimeFrame] = useState<TimeFrame>("1d");
   const [ethTimeFrame, setEthTimeFrame] = useState<TimeFrame>("1d");
+  const [mode, setMode] = useState<'light' | 'dark'>('dark');
+
+  const theme = useMemo(() => createTheme({
+    palette: {
+      mode,
+      background: {
+        default: mode === 'dark' ? "#000000" : "#f5f5f5",
+        paper: mode === 'dark' ? "#121212" : "#ffffff",
+      },
+      primary: {
+        main: mode === 'dark' ? "#90caf9" : "#1976d2",
+      },
+      text: {
+        primary: mode === 'dark' ? "#ffffff" : "#000000",
+      }
+    },
+  }), [mode]);
+
+  const toggleTheme = () => {
+    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+  };
 
   const cryptoService = useMemo(() => new CryptoService(), []);
 
@@ -74,118 +84,119 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <Box
-        component="div"
         sx={{
           display: 'flex',
           flexDirection: 'column',
           minHeight: '100vh',
-          width: '100vw',
-          maxWidth: '100vw',
-          overflow: 'hidden',
-          position: 'relative'
+          width: '100%',
+          bgcolor: 'background.default',
         }}
       >
         <AppBar 
-          position="static" 
-          elevation={4}
+          position="sticky"
           sx={{ 
+            boxShadow: 1,
+            bgcolor: mode === 'light' ? '#ffffff' : '#121212',
+            color: mode === 'light' ? '#000000' : '#ffffff'
+          }}
+        >
+          <Toolbar
+            sx={{
+              width: '100%',
+              px: { xs: 1, sm: 2 },
+              minHeight: { xs: 48, sm: 64 },
+              gap: 1
+            }}
+          >
+            <Typography
+              variant="h6"
+              noWrap
+              sx={{
+                flexGrow: 1,
+                fontSize: { xs: '1rem', sm: '1.25rem' },
+                color: 'inherit'
+              }}
+            >
+              Crypto Analytics
+            </Typography>
+            <IconButton 
+              onClick={toggleTheme} 
+              sx={{ color: 'inherit' }}
+              size="small"
+            >
+              {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
+            </IconButton>
+            <Link
+              href="https://github.com/abdulhanan1000"
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                minWidth: 'auto',
+                color: 'inherit',
+                textDecoration: 'none'
+              }}
+            >
+              <GitHubIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
+              <Typography
+                sx={{
+                  display: { xs: 'none', sm: 'block' },
+                  fontSize: '0.875rem',
+                  color: 'inherit'
+                }}
+              >
+                abdulhanan1000
+              </Typography>
+            </Link>
+          </Toolbar>
+        </AppBar>
+
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
             width: '100%',
-            position: 'relative'
+            height: { xs: 'calc(100vh - 48px)', sm: 'calc(100vh - 64px)' },
+            overflow: 'auto',
+            WebkitOverflowScrolling: 'touch', // For smooth scrolling on iOS
           }}
         >
           <Container 
             maxWidth={false} 
-            disableGutters 
-            sx={{ 
-              width: '100%',
-              px: { xs: 1, sm: 2 }
+            sx={{
+              px: { xs: 1, sm: 2 },
+              py: { xs: 1, sm: 2 }
             }}
           >
-            <Toolbar
-              disableGutters
-              sx={{
-                minHeight: { xs: 56, sm: 64 },
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                width: '100%'
+            <Grid 
+              container 
+              spacing={{ xs: 1, sm: 2 }}
+              sx={{ 
+                width: '100%',
+                mx: 0
               }}
             >
-              <Typography
-                variant="h6"
-                noWrap
-                sx={{
-                  flexGrow: 1,
-                  mr: 2
-                }}
-              >
-                Crypto Analytics Dashboard
-              </Typography>
-              <Box 
-                sx={{ 
-                  display: 'flex',
-                  alignItems: 'center',
-                  flexShrink: 0
-                }}
-              >
-                <Link
-                  href="https://github.com/abdulhanan1000"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  color="inherit"
-                  underline="none"
-                  sx={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 1
-                  }}
-                >
-                  <GitHubIcon sx={{ fontSize: 20 }} />
-                  <Typography
-                    sx={{
-                      display: { xs: 'none', sm: 'block' },
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    abdulhanan1000
-                  </Typography>
-                </Link>
-              </Box>
-            </Toolbar>
+              <Grid item xs={12} md={6}>
+                <CryptoChart
+                  symbol="BTC/USDT"
+                  data={btcData}
+                  currentPrice={btcPrice}
+                  timeFrame={btcTimeFrame}
+                  onTimeFrameChange={handleBtcTimeFrameChange}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <CryptoChart
+                  symbol="ETH/USDT"
+                  data={ethData}
+                  currentPrice={ethPrice}
+                  timeFrame={ethTimeFrame}
+                  onTimeFrameChange={handleEthTimeFrameChange}
+                />
+              </Grid>
+            </Grid>
           </Container>
-        </AppBar>
-
-        <Container 
-          maxWidth={false} 
-          sx={{
-            flexGrow: 1,
-            width: '100%',
-            px: { xs: 1, sm: 2 },
-            py: 2,
-            overflow: 'auto'
-          }}
-        >
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <CryptoChart
-                symbol="BTC/USDT"
-                data={btcData}
-                currentPrice={btcPrice}
-                timeFrame={btcTimeFrame}
-                onTimeFrameChange={handleBtcTimeFrameChange}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <CryptoChart
-                symbol="ETH/USDT"
-                data={ethData}
-                currentPrice={ethPrice}
-                timeFrame={ethTimeFrame}
-                onTimeFrameChange={handleEthTimeFrameChange}
-              />
-            </Grid>
-          </Grid>
-        </Container>
+        </Box>
       </Box>
     </ThemeProvider>
   );

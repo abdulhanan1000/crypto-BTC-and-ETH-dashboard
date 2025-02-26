@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: './',  // This ensures assets are loaded correctly
+  server: {
+    port: 3000
+  },
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
@@ -13,6 +16,12 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: undefined,
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name === 'favicon.svg') {
+            return 'favicon/[name][extname]';
+          }
+          return 'assets/[name]-[hash][extname]';
+        }
       }
     }
   },
