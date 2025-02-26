@@ -45,6 +45,9 @@ npm run dev
 npm run build
 ```
 
+## Preview
+![alt text](./src/assets/image.png)
+
 ## Author
 
 - [abdulhanan1000](https://github.com/abdulhanan1000)
