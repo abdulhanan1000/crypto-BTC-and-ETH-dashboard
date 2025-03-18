@@ -6,11 +6,6 @@ interface RiskPoint {
   price: number;
 }
 
-interface ATHATLState {
-  ath: number;
-  atl: number;
-}
-
 export const getRiskGradientColor = (value: number): string => {
   if (value < 0.1) return '#0000ff'; // Deep Blue
   if (value < 0.2) return '#000bff'; // Blue
@@ -124,23 +119,4 @@ const calculateSMA = (data: CandleData[], period: number): number[] => {
   }
   
   return smaValues;
-};
-
-const color_from_gradient = (value: number, min: number, max: number, colorStart: string, colorEnd: string): string => {
-  const ratio = (value - min) / (max - min);
-  const hex = (x: number) => Math.round(x).toString(16).padStart(2, '0');
-  
-  const r1 = parseInt(colorStart.slice(1, 3), 16);
-  const g1 = parseInt(colorStart.slice(3, 5), 16);
-  const b1 = parseInt(colorStart.slice(5, 7), 16);
-  
-  const r2 = parseInt(colorEnd.slice(1, 3), 16);
-  const g2 = parseInt(colorEnd.slice(3, 5), 16);
-  const b2 = parseInt(colorEnd.slice(5, 7), 16);
-  
-  const r = r1 + (r2 - r1) * ratio;
-  const g = g1 + (g2 - g1) * ratio;
-  const b = b1 + (b2 - b1) * ratio;
-  
-  return `#${hex(r)}${hex(g)}${hex(b)}`;
 };
