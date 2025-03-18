@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { createChart, ColorType, Time } from "lightweight-charts";
 import { Box, Typography, Paper, useTheme } from "@mui/material";
 import { TimeFrame, TimeFrameSelector } from "./TimeFrameSelector";
 import { CandleData, IndicatorData } from "../types/crypto";
 import { IndicatorControls, IndicatorSettings } from "./IndicatorControls";
+import { RiskIndicator } from './RiskIndicator';
 
 interface CryptoChartProps {
   symbol: string;
@@ -154,6 +155,12 @@ export const CryptoChart = ({
     showMA200: true,
     showBullBand: true,
   });
+
+  // Memoize sorted data
+  const sortedData = useMemo(() => 
+    [...data].sort((a, b) => Number(a.time) - Number(b.time)),
+    [data]
+  );
 
   useEffect(() => {
     if (!chartContainerRef.current || !data.length) return;
@@ -350,7 +357,12 @@ export const CryptoChart = ({
         onChange={setIndicators}
         timeFrame={timeFrame}
       />
-      <Box ref={chartContainerRef} />
+      <Box ref={chartContainerRef} sx={{ mb: 2 }} />
+      
+      {/* Add Risk Indicator only in daily timeframe */}
+      {timeFrame === '1d' && sortedData.length > 0 && (
+        <RiskIndicator data={sortedData} />
+      )}
     </Paper>
   );
 };
